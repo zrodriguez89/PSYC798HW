@@ -1,0 +1,73 @@
+---
+title: "Day 3 Homework"
+output: html_document
+---
+
+1. Identify a column in your data that *should* be a factor (whether it is or not). Check to see whether R is already treating it as a factor, and if not, convert it into a factor.
+
+#x <- getwd(). if you store data in working directory use this function.
+#print(x)
+myIndiaSuicidesData0112 <- read.csv("../Suicides in India 2001-2012 Updated.csv") #add x variable to ../ to create path. Concat/String join. Or just copypaste path. What is best practice for this?
+
+```{r}
+myIndiaSuicidesData0112 <- read.csv("../Suicides in India 2001-2012 Updated.csv")
+myIndiaAges <- myIndiaSuicidesData0112$Age_group #why is column name lost?
+is.factor(myIndiaAges)
+
+```
+
+2. What are the levels of the factor? How many occurrences of each level are there in the data?
+   
+```{r}
+levels(myIndiaAges) #5 levels
+summary(myIndiaAges) #0-100+   0-14  15-29  30-44  45-59  60+ 
+                     #10920  45027  45223  45193  45146  45074 
+
+```
+
+3. Create a new column that is a numeric "version" of the factor column, using `as.numeric()`. Use `xtabs()` to see how the values of these columns line up.
+
+```{r}
+myIndiaNumericAges <- as.numeric(myIndiaSuicidesData0112$Age_group)#eliminates levels because numeric?
+levels(myIndiaNumericAges) <- c("1","2","3","4","5","6")
+levels(myIndiaNumericAges) #check levels
+xtabs(~myIndiaNumericAges+myIndiaSuicidesData0112$Type_code, data=myIndiaSuicidesData0112)
+#How does it know to match numericAges (Age group as.numeric) with Type_code from old data set and relvant values.
+
+```
+
+4. Create another column that is a copy of the factor column. Now, recode this new column so that the factor levels have new names. 
+  (e.g., if you have a factor with levels "A" and "B", you could make a new column that had "condition A" and "condition B" as the level names instead)
+
+```{r}
+myIndiaRename <- myIndiaAges
+levels(myIndiaRename)
+newNames <- factor(c("Condition 0-100+", "Condition 0-14", "Condition 15-29", "Condition 30-44", "Condition 45-59", "Condition 60+"))
+levels(myIndiaRename) <- newNames  #rename levels
+levels(myIndiaRename) #check rename
+```
+
+5. Change the order of the levels in your new factor, using three different methods:
+  a. `relevel()` argument moved first. Rest moved down
+  b. `reorder()`
+  c. `factor()`
+
+```{r}
+#Original order: "Condition 0-100+" "Condition 0-14"   "Condition 15-29"  "Condition 30-44"  "Condition 45-59" "Condition 60+"
+myIndiaRelevel <- myIndiaRename #set different variables to reorder from original
+myIndiaReorder <- myIndiaRename
+myIndiaFactor <- myIndiaRename 
+myIndiaRelevel <- relevel(myIndiaRename, "Condition 60+") #moves to 60+ to front
+levels(myIndiaRelevel) #check relevel
+
+
+#reorder labels based on mean. Values returned by FUN are in increasing order. 
+myIndiaReorder <- reorder(myIndiaSuicidesData0112$Age_group, myIndiaSuicidesData0112$Total, FUN = mean)#
+levels(myIndiaReorder) #check reorder
+
+
+myIndiaFactor <- factor(myIndiaFactor, levels=rev(levels(myIndiaFactor))) #reverse order. Instead of explicitly typing out order 
+levels(myIndiaFactor) #check Refactor 
+```
+
+

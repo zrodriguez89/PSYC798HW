@@ -3,7 +3,10 @@
 
 # 1. Read your data set into R
 
-myIndiaSuicidesData0112 <- read.csv("Desktop/R/PSYC798W/Datasets/Suicides in India 2001-2012 Updated.csv")
+#x <- getwd(). if you store data in working directory use this function.
+#print(x)
+
+myIndiaSuicidesData0112 <- read.csv("../Suicides in India 2001-2012 Updated.csv") #add x variable to ../ to create path. Concat
 
 # 2. Peek at the top few rows
 
@@ -99,6 +102,8 @@ randomRowIndiaSubset5Totals <- randomRowIndiaSubset5$Total
 randomRowIndiaSubset6Totals <- randomRowIndiaSubset6$Total
 
 t.test(randomRowIndiaSubset5Totals, randomRowIndiaSubset6Totals)
+
+#remember to change and refer to dataset so it is dynamic. For example instead of 236583 us nrow(dataset)
 
 # 14. Save all results from #12 and #13 in an .RData file
 
