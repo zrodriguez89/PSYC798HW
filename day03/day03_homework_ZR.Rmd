@@ -19,7 +19,7 @@ is.factor(myIndiaAges)
 2. What are the levels of the factor? How many occurrences of each level are there in the data?
    
 ```{r}
-levels(myIndiaAges) #5 levels
+levels(myIndiaAges) #6 levels
 summary(myIndiaAges) #0-100+   0-14  15-29  30-44  45-59  60+ 
                      #10920  45027  45223  45193  45146  45074 
 
