@@ -1,13 +1,10 @@
 ---
-title: "Day 3 Homework"
+title: "Day 4 Homework"
 output: html_document
 ---
 
-1. Identify a column in your data that *should* be a factor (whether it is or not). Check to see whether R is already treating it as a factor, and if not, convert it into a factor.
 
-#x <- getwd(). if you store data in working directory use this function.
-#print(x)
-myIndiaSuicidesData0112 <- read.csv("../Suicides in India 2001-2012 Updated.csv") #add x variable to ../ to create path. Concat/String join. Or just copypaste path. What is best practice for this?
+1. Identify a column in your data that *should* be a factor (whether it is or not). Check to see whether R is already treating it as a factor, and if not, convert it into a factor.
 
 ```{r}
 myIndiaSuicidesData0112 <- read.csv("./Suicides in India 2001-2012 Updated.csv")
@@ -20,14 +17,15 @@ is.factor(myIndiaAges)
 
 ```
 
-2. What are the levels of the factor? How many occurrences of each level are there in the data?
+
+2. What are the levels of the factor? How many occurrences of each level are there in the data? Are the levels ordered in a sensible/meaningful way?
    
 ```{r}
 levels(myIndiaAges) #6 levels
 summary(myIndiaAges) #0-100+   0-14  15-29  30-44  45-59  60+ 
                      #10920  45027  45223  45193  45146  45074 
-
 ```
+
 
 3. Create a new column that is a numeric "version" of the factor column, using `as.numeric()`. Use `xtabs()` to see how the values of these columns line up.
 
@@ -37,10 +35,10 @@ levels(myIndiaNumericAges) <- c("1","2","3","4","5","6")
 levels(myIndiaNumericAges) #check levels
 xtabs(~myIndiaNumericAges+myIndiaSuicidesData0112$Type_code, data=myIndiaSuicidesData0112)
 #How does it know to match numericAges (Age group as.numeric) with Type_code from old data set and relvant values.
-
 ```
 
-4. Create another column that is a copy of the factor column. Now, recode this new column so that the factor levels have new names. 
+
+4. Create another column that is a copy of the factor column. Now, recode this new column so that the factor levels have new names. Use `xtabs()` or another function to double-check your coding.
   (e.g., if you have a factor with levels "A" and "B", you could make a new column that had "condition A" and "condition B" as the level names instead)
 
 ```{r}
@@ -49,10 +47,12 @@ levels(myIndiaRename)
 newNames <- factor(c("Condition 0-100+", "Condition 0-14", "Condition 15-29", "Condition 30-44", "Condition 45-59", "Condition 60+"))
 levels(myIndiaRename) <- newNames  #rename levels
 levels(myIndiaRename) #check rename
+
 ```
 
+
 5. Change the order of the levels in your new factor, using three different methods:
-  a. `relevel()` argument moved first. Rest moved down
+  a. `relevel()`
   b. `reorder()`
   c. `factor()`
 
@@ -72,6 +72,36 @@ levels(myIndiaReorder) #check reorder
 
 myIndiaFactor <- factor(myIndiaFactor, levels=rev(levels(myIndiaFactor))) #reverse order. Instead of explicitly typing out order 
 levels(myIndiaFactor) #check Refactor 
+
 ```
 
 
+6. Missing values
+  a. Do you have any missing values (NA) in your data?
+  b. Are there any places where you *should* have missing values but they were read into R as some other value?
+  c. If the answer to (b) is "yes", figure out how to read in your data in a way that correctly identifies the missing value "code"
+  d. If you have any NAs in your data, describe why you think those values are missing. Does there appear to be any systematic relationship between missingness and other variables in your data?
+
+```{r}
+#No missing values.
+
+```
+
+
+7. Find some aspect of your data that needs to be combined or merged in some way.  This could be a variety of things:
+  - multiple "sheets" in an Excel
+  - multiple files that should be combined into one data set
+  - properties that need to be merged in to one data set. For example:
+    - you have a table of subject properties (gender, handedness, etc.) that need to be merged into the item-level data
+    - you have other information on countries (population, etc.) that need to be merged in
+  - if you DON'T have this naturally-occurring issue, figure out a way to manufacture it. For example:
+    - split up your data into chunks
+    - make up some new table of information that you want to merge in
+  - Explain (in words) what you are trying to do
+  - Use binding/merging commands to accomplish this
+  - Complete at least ONE example of binding and ONE example of merging
+
+```{r}
+
+
+```
