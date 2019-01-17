@@ -1,0 +1,307 @@
+---
+title: "Day 7 Homework"
+output: html_document
+---
+
+NOTE: this counts for both Day 6 and Day 7 homework
+
+1. Create a small (fake) data set that gives some extra data on some kind of group in your data. For example, person-level data on subjects, country-level data if you have countries, something like that.  In this data frame, leave some values out, so that (for example) some of the people/countries/whatever in your primary data are missing from this smaller data set.  Conversely, add some additional values in the small data (for example, some people that are not in your primary data).
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+#air quality dataset
+myAirQuality <- airquality
+head(myAirQuality)
+
+#create fake dataset. Leaving out Wind, Month and Day
+extraAQData <- data.frame(Ozone = sample(10:50, 5), 
+                          Solar.R = sample(120:315, 5), Temp = sample(65:90, 5))
+head(extraAQData)
+
+```
+
+2. Practice merging this data together. First, perform a "full join", where you don't lose any of the values from EITHER data set. Do this with both base R and dplyr functions. Check the # of rows in the new data set, and try to understand why it increased as much as it did.
+
+```{r}
+#using dplyr functions
+airFullJoin <- full_join(myAirQuality, extraAQData, by = c("Ozone", "Solar.R", "Temp"))
+airFullJoin
+
+#using base r functions 
+airMergeAll <- merge(myAirQuality, extraAQData, all = TRUE)
+airMergeAll
+
+```
+
+
+3. Now try an "inner join", where you only end up with the data where the two data sets overlap. Again, both base R and dplyr methods.
+
+```{r}
+
+#key is merging new column to data set by
+
+head(myAirQuality)
+summary(myAirQuality)
+
+#new fake dataset with hour column
+#Month is limited from 5 to 7 for overlap. Each month is assigned hour.
+
+hourAQData <- data.frame(Month = (5:7), Hour = (1:3))
+hourAQData
+                          
+#using dplyr functions
+airInnerJoin <- inner_join(myAirQuality, hourAQData, by = "Month")
+airInnerJoin
+
+#using base r functions 
+airMergeOverlap <- merge(myAirQuality, hourAQData)
+airMergeOverlap
+
+#check if same 
+nrow(airInnerJoin)
+nrow(airMergeOverlap)
+
+```
+
+
+4. Now try a "left join" and a "right join". In a left join, the all of the cases (rows) of the "left-hand" data set are retained, and the other data is only merged in "where available". For example, if you do a left join with your primary data set as the "left hand" data, you should end up with all the original data, but only a subset of the new data will be merged in.  A "right join" is the same concept, just that it's the "right hand" data set that is retained in full. In the `dplyr` functions, "left" is just the first data frame argument, and "right" is the second.  Try both, and examine the results to make sure it makes sense.
+
+```{r}
+#shrink myAirQuality dataset so easier to see differences
+shrunkAir <- myAirQuality[sample(1:150,30),]
+shrunkAir
+
+#left join
+#limited by month range of shrunk data set. That's why NA for month 9. 
+airLeftJoin <- left_join(shrunkAir, hourAQData, by = "Month")
+airLeftJoin
+
+#right join #remember hour data has only 20 observations
+#limited by month range of hour dataset
+airRightJoin <- right_join(shrunkAir, hourAQData, by = "Month")
+airRightJoin
+
+#look at differences 
+nrow(airLeftJoin)
+nrow(airRightJoin)
+
+```
+
+
+5. Find some other aspect of your data that needs to be combined or merged in some way.  This could be a variety of things:
+  - multiple "sheets" in an Excel
+  - multiple files that should be combined into one data set
+  - properties that need to be merged in to one data set. For example:
+    - you have a table of subject properties (gender, handedness, etc.) that need to be merged into the item-level data
+    - you have other information on countries (population, etc.) that need to be merged in
+  - if you DON'T have this naturally-occurring issue, figure out a way to manufacture it. For example:
+    - split up your data into chunks
+    - make up some new table of information that you want to merge in
+  - Explain (in words) what you are trying to do
+  - Try it!
+  - Perform several checks to confirm whether it worked or not
+  - If it didn't work as intended, describe what happened, and see if you can figure out why
+  
+Already tested and created in 1-5. Because of this, I will explain the process and mistakes I made along the way.
+
+-Full Join and Merge All were straightforward. In rows 154-158 of the "airFullJoin" dataset you can see my added values which contained Ozone, Temp, and Solar.R but not Wind, Month, and Day (hence the NA values for those columns)
+-At first for inner join I thought I could remove the Day column and create a dataset which contained Month and Day values. This was a mistake because I was still merging with the original dataset (which caused problems like add an extra day column). 
+-When I tried to merge it with a dataset without a day column it still created an issue of duplicate rows. This was likely because of double assignment of day values and other small manipulation issues.
+-Given these issues, I scrapped this and decided to create a new column for hours which had an unique assignment for a limited range of month values (5-7). This ended up working out for inner join.
+-For left and right join I decided to shrink the original dataset to 30 so it would be easier to see the differences betwen the two
+-over the problems I also used nrow() to test for sameness and differences between dplyr functions and base r functions
+
+
+6. Use ggplot to plot a histogram of some variable in your data. Anything unexpected?
+
+```{r}
+#myris.hist <- ggplot(myris, aes(cm)) + geom_histogram(aes(fill = Species)) 
+head(myAirQuality)
+ggplot(myAirQuality, aes(Temp)) + geom_histogram()
+
+#nothing unexpected. However binwidth would be better if thinner.
+
+ggplot(myAirQuality, aes(Temp)) + geom_histogram(binwidth = .5) 
+
+#also increasing scale x axis since it only has 60,70,80,90
+
+ggplot(myAirQuality, aes(Temp)) + geom_histogram(binwidth = .5) + scale_x_continuous(breaks = 56:97)
+
+
+```
+
+
+7. Think about the "shape" of your data. Is it "long" or "wide"? Some of both?  Try to identify a way in which it could be make "longer" (i.e., by collapsing two or more columns into a single column along with a "grouping" column) or "wider" (i.e., by splitting out a column across multiple new columns, by some grouping factor).  Use `gather()` and `spread()` from the `tidyr` package to go back and forth between long and wide shapes.
+
+```{r}
+#some of both. Can be made wider. Spreading Month Column (Months 5-8)
+library(tidyr)
+
+#change month to factor
+myAirQuality$Month <- factor(myAirQuality$Month) 
+
+summary(myAirQuality)
+
+#rename levels
+levels(myAirQuality$Month) <- c("Month_Five", "Month_Six", "Month_Seven", "Month_Eight", "Month_Nine")
+summary(myAirQuality)
+
+#spread month column
+
+myAirSpread <- spread(myAirQuality, key = Month, value = Temp)
+
+
+
+```
+
+
+8. Make your data "wide" enough that there are two numeric columns that might have a relationship between them. Use ggplot and `geom_point()` to plot a scatterplot of these data.
+
+```{r}
+ggplot(myAirSpread, aes(Solar.R, Temp)) + geom_point() +  geom_smooth(method = "lm")
+
+```
+
+
+9. Identify some other "grouping" variable (i.e., factor column) in your data. Re-do the scatterplot from above, but in addition try mapping this additional factor to some other aesthetic, such as `color`, `fill`, `shape`, `size`, etc.
+
+```{r}
+#change month to factor
+myAirQuality$Month <- factor(myAirQuality$Month) 
+summary(myAirQuality)
+
+#rename levels
+levels(myAirQuality$Month) <- c("Month_Five", "Month_Six", "Month_Seven", "Month_Eight", "Month_Nine")
+summary(myAirQuality)
+
+ggplot(myAirQuality, aes(Month, Temp)) + geom_point(aes(color = Month))
+
+```
+
+
+10. Now try splitting the scatterplot into multiple plots based on this grouping factor (or a different one). Use `facet_wrap` or `facet_grid` in ggplot.
+
+```{r}
+#facet_wrap
+ggplot(myAirQuality, aes(Temp, Month)) + geom_point(aes(color = Month)) + facet_wrap(~ Month)
+
+#x axis labels hard to read. Rename
+
+airQualGraph <- ggplot(myAirQuality, aes(Month, Temp)) + geom_point(aes(color = Month)) + facet_wrap(~ Month)
+
+airQualGraph + scale_x_discrete(labels = c("5", "6", "7", "8", "9"))
+
+```
+
+11. Return to a plot that uses color (if you haven't made one yet, make one now).  Now use the appropriate scale (either `color` or `fill`) to change the colors being plotted.
+
+```{r}
+colors()
+ggplot(myAirQuality, aes(Month, Temp)) + geom_point(color = "tomato2")
+
+
+```
+
+12. Identify some aspect of your data where computing something like "cell means" makes sense. For example, getting the mean (or median, or whatever) value of some column, broken down by some grouping factors.  Use the reshaping, grouping, and summarizing functions in `tidyr` and `dplyr` to create a data frame that is a table of these cell means.
+
+```{r}
+group_by(ffLong, treatment, flavor) %>% summarize(mean.rating = mean(rating, na.rm = TRUE)) %>% spread(flavor, mean.rating) %>% as.data.frame()
+
+#temp values under month columns
+#piping but not piping
+#group then summarize temp in means. Spread based on month factor. convert data frame
+#piping feeds it in as first argument of next
+tempMeansSummary <- group_by(myAirQuality, Month) %>% summarize(mean.temp = mean(Temp, na.rm = TRUE)) %>% as.data.frame()
+
+```
+
+13. Now create a function that computes the standard error of a mean. This is the same as what we did in class, but try to do it from scratch before looking back at the code, to see if you can remember how to do it.
+
+```{r}
+#std dev / sqrt(Number observations - 1)
+
+stdError <- function(vectorNum, na.rm = FALSE){
+  sd(vectorNum, na.rm = na.rm) / sqrt(length(vectorNum))
+}
+vectorTest <- c(1:10)
+mean(vectorTest)
+stdError(vectorTest)
+
+```
+
+
+14. Now re-run the code that summarized your data into cell means, but add the code to also compute the standard errors at the same time, so that you end up with a table of means and standard errors.
+
+```{r}
+#add std error argument for temp that is new column with month.
+summarise(group_by(myAirQuality, Month), mean.temp = mean(Temp, na.rm = TRUE))
+#when combining group by and summarize outputs tbl with month and mean.temp column
+# Month       mean.temp
+ # <fct>           <dbl>
+#1 Month_Five       65.5
+#2 Month_Six        79.1
+
+tempMeansSE <- group_by(myAirQuality, Month) %>% summarize(mean.temp = mean(Temp, na.rm = TRUE), se = stdError(Temp, na.rm = TRUE)) %>% as.data.frame()
+tempMeansSE 
+
+
+```
+
+
+15.  Now plot your table of means and standard errors, using geom_point() and geom_errorbar(), or using geom_pointrange(), or another geom of your choice.  Try to use +/- 1.96 times the standard error to set the upper and lower bounds of the error bar, because this will essentially give you a 95% confidence interval.
+
+```{r}
+tempMeanPlot <- ggplot(tempMeansSE, aes(Month, mean.temp)) + geom_point() + geom_pointrange(aes(ymin = mean.temp - se*1.96, ymax = mean.temp + se*1.96))
+
+```
+
+
+16.  Find some additional factor that you'd like to group these means by.  For example, if your first table of means was broken down by experimental condition, now you could try to break it down by both condition and participant gender.  Re-use your code from above to get the cell means & standard errors, but add this new factor to the grouping statement to get the new, more complex table of cell means.
+
+```{r}
+airNewFactor <- group_by(myAirQuality, Month, Wind) %>% summarize(mean.temp = mean(Temp, na.rm = TRUE), se = stdError(Temp, na.rm = TRUE)) %>% as.data.frame()
+airNewFactor
+
+```
+
+
+17. Plot this new table of cell means, and map the new factor to an additional aesthetic, like color, or use it to facet your plot.  That is, this plot should look similar to the plot from #14 above, but also broken down by your new factor in some way.
+
+```{r}
+#clean out NA rows se column using tidyr
+
+airNewFactorClean <- airNewFactor %>% drop_na()
+airNewFactorClean
+
+airNFCleanPlot <- ggplot(airNewFactorClean, aes(Wind, mean.temp)) + geom_point() + geom_pointrange(aes(ymin = mean.temp - se*1.96, ymax = mean.temp + se*1.96))
+  
+  
+#how to easily change x axis to decimal increasing from 5.0 5.1 5.2 ... 16.6?
+
+
+```
+
+
+18. Save both plots in #14 and #17 into a single PDF, and save the two cell means tables as (separate) CSV files.
+
+```{r}
+tempMeansSE
+airNewFactorClean
+
+#export plots #14 and #17 to single PDF
+#like you set up pdf, load the graphs you want, then turn it off and wrap up. Auto save in WD. 
+pdf("1417plots.pdf")
+tempMeanPlot
+airNFCleanPlot
+dev.off()
+
+
+#write cell means tables to CSV
+write.csv(tempMeansSE, "temp_means_summary_chart")
+write.csv(airNewFactorClean, "NFClean_summary_chart")
+
+
+```
+
