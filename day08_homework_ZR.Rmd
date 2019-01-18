@@ -1,0 +1,65 @@
+---
+title: "Day 8 Homework"
+output: html_document
+---
+
+Find two repetitive things that you would like to be able to do with your data.  This can be something having to do with coding variables, or saving plots, or running an analysis multiple times on different subsets, etc. etc.  Just try to find something where you would normally need to "copy and paste" sections of code, varying only one or two things.  Figure out how to use a loop to accomplish this.  
+
+For BOTH of these things, take the following steps:
+
+1. Articulate what you want to do (verbally)
+
+Two things that need to be done that are repetitive:
+    1. Double checking if numbers are prime
+    2. Checking each number to see if it is prime using the isPrime() function of the primefactr package
+
+2. Give some code that illustrates the "copy and paste" method.  This can just show a couple of steps.  That is, if you would be running through a bunch of iterations, just copy and paste a couple of times, not everything.
+
+```{r}
+library(primefactr) #you will need to first download this package
+primeData <- list("Number" = 0:89, IsPrime = NA, Primes = AllPrimesUpTo(89), Group = rep(1:9, 1, each = 10))
+
+
+#While the grouping rep and number amount arent the worst, the key problem is checking for primes
+#it needs to be iterated through. This can become useful when wanting an update on progess and to see other aspects of the data set
+#there's also a different number of rows so list is needed 
+```
+
+
+3. Work this code into a loop format, so that no copy & paste is neccesary.  You will need to set up a "counter" variable that cycles through various values (which do not have to be numeric), changing with every pass through the loop.  But you may also need to make other changes to your code to accommodate the loop.
+
+```{r}
+#groups are based on 9 groups of 10. 0-9, 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70-79, 80-89
+#in the same order they are Groups 1-9
+primeData <- list(Number = 0:89, IsPrime = NA, Primes = AllPrimesUpTo(89), DoubleCheck = NA, 
+                  Group = rep(1:9, 1, each = 10))
+
+#iterates through to determine if number is prime. Instead of string it could be codified as numbers or letters
+# 0 = Not Prime 1 = Prime. Or P and NP. 
+#This format for looping would benefit other potential columns such as sum digit.
+for(number in primeData$Number){
+  
+  #check if prime
+  if(number == 0){primeData$IsPrime[number + 1] = "Not Prime"
+  } else if(number == 1){
+    primeData$IsPrime[number + 1] = "Not Prime"
+  } else if(IsPrime(number)){
+    primeData$IsPrime[number + 1] = "Prime"
+  } else {
+    primeData$IsPrime[number + 1] = "Not Prime"
+  }
+  
+  #double check column if prime
+   if(number %in% primeData$Primes){primeData$DoubleCheck[number + 1] = "Prime"
+  } else{
+    primeData$DoubleCheck[number + 1] = "Not Prime"
+  } 
+ 
+}
+primeData[["IsPrime"]]
+primeData[["DoubleCheck"]]
+
+```
+
+
+As usual, send me your .Rmd file with any data I need to replicate your results.
